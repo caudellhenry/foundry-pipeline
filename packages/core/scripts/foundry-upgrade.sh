@@ -116,7 +116,7 @@ fi
 # 2. Determine target version
 if [[ -z "$TARGET_VERSION" ]]; then
   if [[ "$DRY_RUN" != "1" ]]; then
-    TARGET_VERSION="$(cd "$SOURCE_DIR" && git tag --sort=-version:refname 'v*' 2>/dev/null | head -1)"
+    TARGET_VERSION="$(cd "$SOURCE_DIR" && git tag --list --sort=-version:refname 'v*' 2>/dev/null | head -1)"
     if [[ -z "$TARGET_VERSION" ]]; then
       echo "ERROR: no v* tags found in $SOURCE_DIR" >&2
       exit 1

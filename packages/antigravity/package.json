@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/antigravity",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "private": true,
   "description": "Antigravity install wrapper for the foundry pipeline. Creates ~/.antigravity/plugins/foundry-pipeline/<version>/ at install time.",
   "license": "MIT",

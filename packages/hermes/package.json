@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/hermes",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "private": true,
   "description": "Hermes install wrapper for the foundry pipeline. Creates ~/.hermes/skills/foundry-* symlinks at install time.",
   "license": "MIT",

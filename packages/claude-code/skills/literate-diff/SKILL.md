@@ -2,7 +2,7 @@
 name: foundry-literate-diff
 description: Cross-cutting discipline skill. After every ticket lands (Phase 6 commit), produces a literate diff — a structured prose explanation of what changed, why, and what the reader needs to know to maintain it. Operationalises Geoffrey Litt's /explore-diff and the cognitive-debt discipline (Willison / Osmani). The literate diff is committed alongside the code and used by the QA reviewer (Phase 7 writer/reviewer). Triggered on PostToolUse after Write/Edit on a tracked file.
 ---
-foundry_version: 2.0.2
+foundry_version: 2.0.3
 
 # Cross-cutting — Literate Diff
 

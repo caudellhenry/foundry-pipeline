@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/mimocode",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "private": true,
   "description": "MimoCode install wrapper for the foundry pipeline. Creates ~/.mimocode/plugins/foundry-pipeline/<version>/ at install time.",
   "license": "MIT",

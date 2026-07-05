@@ -10,5 +10,5 @@
       "description": "Canonical foundry AI-engineering pipeline (v2.0.0). Idea → Research → Prototype → PRD → Board → Execution → QA. Tracker-flexible (local / GitHub / Linear). Patch-aware. Installable across Claude Code, Zcode, Hermes, OpenCode, Antigravity, MimoCode."
     }
   ],
-  "version": "2.0.2"
+  "version": "2.0.3"
 }

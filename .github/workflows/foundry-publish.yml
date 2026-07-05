@@ -37,10 +37,14 @@ jobs:
           git config user.name "foundry-bot"
           git config user.email "foundry-bot@users.noreply.github.com"
           git add -A
+          # Only commit + push if there are actually manifest changes.
+          # On a tag push the workflow is on a detached HEAD, so push back to
+          # main explicitly. Use GH_PUBLISH_TOKEN or fall back to the default
+          # GITHUB_TOKEN; workflow needs `contents: write` (already set).
           if ! git diff --cached --quiet; then
             git commit -m "chore(release): sync v${{ steps.version.outputs.version }} manifests"
+            git push origin HEAD:main
           fi
-          git push
 
       - name: Generate changelog
         id: changelog

@@ -139,8 +139,11 @@ orphan_count=0
 remove_orphan() {
   local root="$1"
   [[ -d "$root" ]] || return 0
-  # Match <version> directly under the cache/plugin dir (the v2.0.1 bug path)
-  for hit in "$root"/*/; do
+  # Match <version> directly under the cache/plugin dir (the v2.0.1 bug path).
+  # NOTE: no trailing slash in the glob — bash filters out broken symlinks when
+  # the pattern ends in '/', but the v2.0.1 bug leaves broken symlinks (e.g.
+  # ~/.zcode/cli/plugins/cache/2.0.1 → packages/zcode which no longer exists).
+  for hit in "$root"/*; do
     [[ -e "$hit" || -L "$hit" ]] || continue
     base="$(basename "$hit")"
     # Heuristic: looks like a version (e.g. 2.0.1, 1.4.0)

@@ -1,0 +1,7 @@
+name: version-sync-passes
+description: foundry-version-check.sh exits 0
+test_cmd: |
+  bash scripts/foundry-version-check.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

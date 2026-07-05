@@ -1,0 +1,23 @@
+{
+  "name": "foundry-pipeline",
+  "version": "2.0.0",
+  "description": "Canonical foundry AI-engineering pipeline — idea → working MVP. Same workflow as @foundry-pipeline/core, packaged for Claude Code (commands + hooks).",
+  "author": {
+    "name": "Henry Caudell"
+  },
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": "https://github.com/caudellhenry/foundry-pipeline",
+  "license": "MIT",
+  "keywords": [
+    "ai-engineering",
+    "foundry",
+    "pipeline",
+    "ralph-loop",
+    "prd",
+    "tdd",
+    "qa",
+    "spec-driven",
+    "kanban",
+    "sub-agents"
+  ]
+}

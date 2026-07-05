@@ -1,0 +1,61 @@
+name: foundry-publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build + GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq + rsync
+        run: sudo apt-get update && sudo apt-get install -y jq rsync
+
+      - name: Read VERSION
+        id: version
+        run: |
+          ver=$(tr -d '[:space:]' < VERSION)
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Sync version
+        run: bash scripts/foundry-version-sync.sh
+
+      - name: Build monorepo (write manifests)
+        run: bash scripts/foundry-monorepo-build.sh
+
+      - name: Commit version + manifests
+        run: |
+          git config user.name "foundry-bot"
+          git config user.email "foundry-bot@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): sync v${{ steps.version.outputs.version }} manifests"
+          fi
+          git push
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          RANGE_FROM=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [[ -z "$RANGE_FROM" ]]; then
+            RANGE_FROM="$(git rev-list --max-parents=0 HEAD)"
+          fi
+          RANGE_FROM="$RANGE_FROM" bash scripts/foundry-changelog.sh > release_body.md
+          echo "Generated release_body.md ($(wc -l < release_body.md) lines)"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "foundry-pipeline v${{ steps.version.outputs.version }}"
+          body_path: release_body.md
+          draft: false
+          prerelease: ${{ contains(steps.version.outputs.version, '-') }}

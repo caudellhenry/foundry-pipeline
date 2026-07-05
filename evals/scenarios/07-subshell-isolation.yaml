@@ -1,0 +1,7 @@
+name: subshell-isolation
+description: subshell exports do not leak to parent shell
+test_cmd: |
+  (export FOO=bar); [ -z "$FOO" ]
+expected_exit: 0
+pass_k: 3
+release_gating: true

@@ -1,0 +1,7 @@
+name: build-dry-run-passes
+description: foundry-monorepo-build.sh DRY_RUN=1 exits 0
+test_cmd: |
+  DRY_RUN=1 bash scripts/foundry-monorepo-build.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

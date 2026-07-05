@@ -1,0 +1,21 @@
+{
+  "name": "foundry-pipeline",
+  "version": "2.0.0",
+  "description": "Canonical foundry AI-engineering pipeline — packaged for Zcode. Symlinks to ~/.zcode/cli/plugins/cache/foundry-pipeline/<version>/ on install.",
+  "author": {
+    "name": "Henry Caudell"
+  },
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": "https://github.com/caudellhenry/foundry-pipeline",
+  "license": "MIT",
+  "keywords": [
+    "ai-engineering",
+    "foundry",
+    "pipeline",
+    "zcode",
+    "ralph-loop",
+    "prd",
+    "tdd",
+    "qa"
+  ]
+}

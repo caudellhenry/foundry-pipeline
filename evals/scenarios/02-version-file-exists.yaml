@@ -1,0 +1,7 @@
+name: version-file-exists
+description: Root VERSION file exists and matches MAJOR.MINOR.PATCH
+test_cmd: |
+  test -f VERSION && grep -E '^[0-9]+\.[0-9]+\.[0-9]+' VERSION
+expected_exit: 0
+pass_k: 1
+release_gating: true

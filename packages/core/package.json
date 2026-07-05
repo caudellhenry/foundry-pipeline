@@ -1,0 +1,19 @@
+{
+  "name": "@foundry-pipeline/core",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Portable core for the foundry AI-engineering pipeline. Skills, agents, scripts, tracker-adapters, templates, and evals — consumed by every harness package.",
+  "license": "MIT",
+  "author": "Henry Caudell",
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caudellhenry/foundry-pipeline.git",
+    "directory": "packages/core"
+  },
+  "foundry_version": "2.0.0",
+  "foundry_role": "core",
+  "scripts": {
+    "test": "bash ../../evals/run.sh"
+  }
+}

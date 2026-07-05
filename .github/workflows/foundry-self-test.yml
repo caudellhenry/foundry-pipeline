@@ -1,0 +1,48 @@
+name: foundry-self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shell-syntax:
+    name: Shell + JSON syntax + VERSION sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run self-test
+        run: bash scripts/foundry-self-test.sh
+
+  version-sync:
+    name: VERSION sync check (all packages agree with root VERSION)
+    runs-on: ubuntu-latest
+    needs: shell-syntax
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run version-check
+        run: bash scripts/foundry-version-check.sh
+
+  monorepo-build:
+    name: Monorepo build (dry-run)
+    runs-on: ubuntu-latest
+    needs: version-sync
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Dry-run build
+        run: bash scripts/foundry-monorepo-build.sh
+        env:
+          DRY_RUN: "1"

@@ -1,0 +1,17 @@
+{
+  "name": "@foundry-pipeline/claude-code",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Claude Code marketplace plugin wrapper for the foundry pipeline. Adds commands/ and hooks/ to the portable core.",
+  "license": "MIT",
+  "author": "Henry Caudell",
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caudellhenry/foundry-pipeline.git",
+    "directory": "packages/claude-code"
+  },
+  "foundry_version": "2.0.0",
+  "foundry_role": "harness-wrapper",
+  "foundry_harness": "claude-code"
+}

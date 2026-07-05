@@ -1,0 +1,7 @@
+name: false-exit-nonzero
+description: bash `false` exits 1 (sanity)
+test_cmd: |
+  false
+expected_exit: 1
+pass_k: 3
+release_gating: true

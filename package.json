@@ -1,0 +1,66 @@
+{
+  "name": "foundry-pipeline",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Canonical monorepo for the foundry AI-engineering pipeline plugin — idea → working MVP, installable identically across Claude Code, Zcode, Hermes, OpenCode, Antigravity, MimoCode, and skills.sh.",
+  "license": "MIT",
+  "author": "Henry Caudell",
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caudellhenry/foundry-pipeline.git"
+  },
+  "workspaces": [
+    "packages/core",
+    "packages/claude-code",
+    "packages/zcode",
+    "packages/skills-sh",
+    "packages/hermes",
+    "packages/opencode",
+    "packages/antigravity",
+    "packages/mimocode"
+  ],
+  "scripts": {
+    "version:sync": "bash scripts/foundry-version-sync.sh",
+    "version:check": "bash scripts/foundry-version-check.sh",
+    "build": "bash scripts/foundry-monorepo-build.sh",
+    "build:dry-run": "DRY_RUN=1 bash scripts/foundry-monorepo-build.sh",
+    "changelog": "bash scripts/foundry-changelog.sh",
+    "evals": "bash evals/run.sh",
+    "self:test": "bash scripts/foundry-self-test.sh"
+  },
+  "keywords": [
+    "ai-engineering",
+    "foundry",
+    "pocock",
+    "seven-phases",
+    "ralph-loop",
+    "spec-driven",
+    "prd",
+    "kanban",
+    "tdd",
+    "qa",
+    "platform-agnostic",
+    "github",
+    "gitlab",
+    "linear",
+    "local-only",
+    "sub-loop",
+    "external-review-convergence",
+    "sub-agents",
+    "convergence-gates",
+    "test-runner",
+    "auto-detect",
+    "worktree",
+    "parallel-fan-out",
+    "iteration-cap",
+    "eval-suite",
+    "pass-k",
+    "monorepo",
+    "multi-harness"
+  ],
+  "engines": {
+    "bash": ">=4.0",
+    "jq": ">=1.6"
+  }
+}

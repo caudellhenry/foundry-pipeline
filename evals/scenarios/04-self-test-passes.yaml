@@ -1,0 +1,7 @@
+name: self-test-passes
+description: foundry-self-test.sh exits 0 (shell+JSON syntax + VERSION sanity)
+test_cmd: |
+  bash scripts/foundry-self-test.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

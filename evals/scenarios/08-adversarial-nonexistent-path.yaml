@@ -1,0 +1,7 @@
+name: adversarial-nonexistent-path
+description: ls on nonexistent path exits non-zero (sanity)
+test_cmd: |
+  ls /nonexistent/path/that/should/never/exist/abc123xyz
+expected_exit: 1
+pass_k: 3
+release_gating: false

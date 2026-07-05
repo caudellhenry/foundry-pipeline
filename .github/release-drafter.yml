@@ -1,0 +1,35 @@
+# Release-drafter config — keeps CHANGELOG.md + GitHub release drafts tidy.
+# Workflow that consumes this lives at .github/workflows/release-drafter.yml
+# (added in a follow-up PR; out of scope for Phase A skeleton).
+
+categories:
+  - title: "🚀 Features"
+    labels: ["feature", "enhancement"]
+  - title: "🐛 Bug Fixes"
+    labels: ["bug", "fix"]
+  - title: "📖 Documentation"
+    labels: ["documentation", "docs"]
+  - title: "🔧 Maintenance"
+    labels: ["chore", "refactor", "build", "ci"]
+
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+
+version-resolver:
+  major:
+    labels: ["breaking"]
+  minor:
+    labels: ["feature", "enhancement"]
+  patch:
+    labels: ["bug", "fix", "chore", "docs"]
+
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
+
+  ---
+  Foundry pipeline v$RESOLVED_VERSION — see [docs/USER_GUIDE.md](../blob/main/docs/USER_GUIDE.md) for usage.

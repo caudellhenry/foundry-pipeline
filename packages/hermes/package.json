@@ -1,0 +1,17 @@
+{
+  "name": "@foundry-pipeline/hermes",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Hermes install wrapper for the foundry pipeline. Creates ~/.hermes/skills/foundry-* symlinks at install time.",
+  "license": "MIT",
+  "author": "Henry Caudell",
+  "homepage": "https://github.com/caudellhenry/foundry-pipeline",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caudellhenry/foundry-pipeline.git",
+    "directory": "packages/hermes"
+  },
+  "foundry_version": "2.0.0",
+  "foundry_role": "harness-wrapper",
+  "foundry_harness": "hermes"
+}

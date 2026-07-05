@@ -2,7 +2,7 @@
 name: foundry-prd
 description: Phase 4 of the foundry — the PRD phase (non-conditional). Produces the destination document at .foundry/prd.md describing the end state (what the user sees, how it behaves) — NOT the implementation. Interrogates the user via grill-me to remove ambiguity. Modeled on mattpocock/skills/to-prd + spec-kit's /specify + /plan + /tasks ceremony. Use when /foundry-prd is invoked or when the pipeline auto-advances from Phase 3.
 ---
-foundry_version: 2.0.0
+foundry_version: 2.0.1
 
 # Phase 4 — PRD
 

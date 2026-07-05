@@ -2,7 +2,7 @@
 name: foundry-idea
 description: Phase 1 of the foundry — the Idea phase. Runs a relentless interview to sharpen a plan or design (grill-me), captures the *intent* (not the implementation) into .foundry/idea/intent.md, surfaces risks into .foundry/idea/risks.md, and advances the pipeline to Phase 2. Use when /foundry-idea is invoked or when the pipeline is at Phase 1.
 ---
-foundry_version: 2.0.0
+foundry_version: 2.0.1
 
 # Phase 1 — Idea
 

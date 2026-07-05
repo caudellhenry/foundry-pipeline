@@ -1,0 +1,13 @@
+name: foundry-cleanup-all-syntax
+description: foundry-cleanup-all.sh passes bash -n and --help prints expected sections
+test_cmd: |
+  failed=0
+  bash -n packages/core/scripts/foundry-cleanup-all.sh || failed=1
+  help=$(bash packages/core/scripts/foundry-cleanup-all.sh --help 2>&1)
+  echo "$help" | grep -q 'foundry-cleanup-all' || failed=1
+  echo "$help" | grep -q '\-\-dry-run' || failed=1
+  echo "$help" | grep -q '\-\-no-backup' || failed=1
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

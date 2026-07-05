@@ -94,12 +94,12 @@ if [[ "$RELEASE_CHECK" == "true" ]]; then
   for s in "${TO_RUN[@]}"; do
     f="$SCENARIOS_DIR/$s.yaml"
     [[ -f "$f" ]] || continue
-    is_release=$(awk -F':' '/^release_gating:/{print $2; exit}' "$f")
+    is_release=$(awk -F':' '/^release_gating:/{sub(/^[[:space:]]+/, "", $2); print $2; exit}' "$f")
     if [[ "$is_release" == "true" ]]; then
       FILTERED+=("$s")
     fi
   done
-  TO_RUN=("${FILTERED[@]}")
+  TO_RUN=("${FILTERED[@]+"${FILTERED[@]}"}")
   echo "Release check: ${#TO_RUN[@]} release-gating scenarios"
 fi
 
@@ -122,14 +122,43 @@ for scenario in "${TO_RUN[@]}"; do
     continue
   fi
 
-  # Parse
+  # Parse — single-line values (first match wins)
   TASK=$(awk -F':' '/^task:/{sub(/^task: */, ""); print; exit}' "$f")
-  TEST_CMD=$(awk -F':' '/^test_cmd:/{sub(/^test_cmd: */, ""); print; exit}' "$f")
-  SETUP=$(awk -F':' '/^setup:/{sub(/^setup: */, ""); print; exit}' "$f")
-  EXPECT_EXIT=$(awk -F':' '/^expect_exit_code:/{sub(/^expect_exit_code: */, ""); print; exit}' "$f")
+  EXPECT_EXIT=$(awk -F':' '/^expect_exit_code:/{sub(/^expect_exit_code: */, ""); print; exit} /^expected_exit:/{sub(/^expected_exit: */, ""); print; exit}' "$f")
   EXPECT_EXIT="${EXPECT_EXIT:-0}"
   PASS_K=$(awk -F':' '/^pass_k:/{sub(/^pass_k: */, ""); print; exit}' "$f")
   PASS_K="${PASS_K:-$K_DEFAULT}"
+
+  # Parse — multi-line block scalars (test_cmd: | or setup: |)
+  # Reads indented continuation lines until a non-indented or blank-separated line.
+  parse_block() {
+    local key="$1"
+    awk -v key="$key" '
+      $0 ~ "^"key":[[:space:]]*[|>][[:space:]]*$" { capturing=1; next }
+      capturing && /^[[:space:]]+/ { sub(/^[[:space:]]+/, ""); print; next }
+      capturing { capturing=0 }
+    ' "$f"
+  }
+  TEST_CMD=$(parse_block test_cmd)
+  SETUP=$(parse_block setup)
+  # Fall back to single-line form if no block was found; strip surrounding
+  # single or double quotes that YAML allows for one-line scalars.
+  strip_quotes() {
+    local v="$1"
+    v="${v#\"}"
+    v="${v%\"}"
+    v="${v#\'}"
+    v="${v%\'}"
+    printf '%s' "$v"
+  }
+  if [[ -z "$TEST_CMD" ]]; then
+    TEST_CMD=$(awk -F':' '/^test_cmd:[[:space:]]+/{sub(/^test_cmd:[[:space:]]+/, ""); print; exit}' "$f")
+    TEST_CMD="$(strip_quotes "$TEST_CMD")"
+  fi
+  if [[ -z "$SETUP" ]]; then
+    SETUP=$(awk -F':' '/^setup:[[:space:]]+/{sub(/^setup:[[:space:]]+/, ""); print; exit}' "$f")
+    SETUP="$(strip_quotes "$SETUP")"
+  fi
 
   if [[ -z "$TEST_CMD" ]]; then
     SUMMARY+=("{\"scenario\":\"$scenario\",\"status\":\"SKIP\",\"reason\":\"no test_cmd\"}")
@@ -139,15 +168,21 @@ for scenario in "${TO_RUN[@]}"; do
   # Run pass^k trials
   k_pass=0
   for trial in $(seq 1 "$PASS_K"); do
-    # Run setup in a temp dir
+    # Run setup in a temp dir (so it doesn't pollute the repo)
     TRIAL_DIR="$(mktemp -d)"
     pushd "$TRIAL_DIR" >/dev/null
     if [[ -n "$SETUP" ]]; then
       eval "$SETUP" 2>/dev/null || true
     fi
-    # Run the test
+    # Always pop back to the project root before running test_cmd so relative
+    # paths (packages/..., etc.) resolve.
+    popd >/dev/null
+    pushd "$PROJECT_ROOT" >/dev/null
+    # Run test_cmd in a subshell so an `exit` inside it doesn't terminate us.
+    # Enable pipefail inside the subshell so scenarios like 04 (which test
+    # pipefail propagation) get the expected behavior.
     EXIT_CODE=0
-    eval "$TEST_CMD" >/dev/null 2>&1 || EXIT_CODE=$?
+    bash -c "set -o pipefail; $TEST_CMD" >/dev/null 2>&1 || EXIT_CODE=$?
     popd >/dev/null
     rm -rf "$TRIAL_DIR"
 

@@ -3,7 +3,7 @@ name: security-review
 description: Security audit of a diff, a new tool/MCP server, or the agent setup itself — static analysis, lethal-trifecta exposure, iteration-chain and complexity checks. Use before release, and before adopting any new tool or MCP server.
 disable-model-invocation: true
 ---
-foundry_version: 2.0.0
+foundry_version: 2.0.1
 
 # /security-review — trifecta, iteration, complexity
 

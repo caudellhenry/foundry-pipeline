@@ -1,0 +1,12 @@
+name: install-scripts-syntax
+description: All packages/*/install.sh pass bash -n syntax check
+test_cmd: |
+  failed=0
+  for f in packages/claude-code/install.sh packages/zcode/install.sh packages/hermes/install.sh packages/opencode/install.sh packages/antigravity/install.sh packages/mimocode/install.sh packages/skills-sh/install.sh; do
+    [[ -f "$f" ]] || continue
+    bash -n "$f" || failed=1
+  done
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

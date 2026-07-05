@@ -2,7 +2,7 @@
 name: foundry-execute
 description: Phase 7 of the foundry — the Execution loop (Ralph loop). Drives the coding agent through the board, one ticket per iteration: read ticket + frozen TDD spec -> write failing tests per spec (red) -> implement (green) -> refactor -> update TDD doc -> record evidence -> commit -> mark done. Fresh context per ticket prevents context rot. Verifier sub-agent (or stop-hook) checks goal completion. Loops until the board is empty (or auto_loop max iterations). Use when /foundry-execute is invoked or when /foundry-loop-on is enabled.
 ---
-foundry_version: 2.0.0
+foundry_version: 2.0.1
 
 # Phase 6 — Execution Loop (Ralph loop)
 

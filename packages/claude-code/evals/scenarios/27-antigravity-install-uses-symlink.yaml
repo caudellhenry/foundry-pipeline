@@ -1,0 +1,21 @@
+name: antigravity-install-uses-symlink
+description: antigravity/install.sh uses ln -sfn (symlink) by default — no plain cp -R
+test_cmd: |
+  failed=0
+  src=packages/antigravity/install.sh
+  bash -n "$src" || failed=1
+  # Default mode must be symlink
+  grep -q 'ln -sfn' "$src" || { echo "  no ln -sfn in $src" >&2; failed=1; }
+  # Copy must be guarded by FOUNDRY_INSTALL_COPY
+  grep -q 'FOUNDRY_INSTALL_COPY' "$src" || { echo "  no FOUNDRY_INSTALL_COPY escape" >&2; failed=1; }
+  # The bare cp -R block must not be the unconditional default path
+  if grep -E '^[[:space:]]*cp -R' "$src" | grep -v 'FOUNDRY_INSTALL_COPY' | grep -q .; then
+    # Allow it only inside an if [[ ... == "1" ]] branch
+    grep -B2 -E '^[[:space:]]*cp -R' "$src" | grep -q 'FOUNDRY_INSTALL_COPY' || {
+      echo "  unconditional cp -R found" >&2; failed=1;
+    }
+  fi
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

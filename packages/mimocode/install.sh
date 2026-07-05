@@ -52,10 +52,20 @@ echo "Installing foundry-pipeline v$VERSION for MimoCode..."
 
 (cd "$SOURCE_DIR" && bash scripts/foundry-monorepo-build.sh >/dev/null)
 
+# Link (or copy if FOUNDRY_INSTALL_COPY=1) the mimocode package into the
+# MimoCode plugins dir. Default: ln -sfn so `git pull` in the canonical
+# clone updates every harness at once.
 DEST="$MIMOCODE_PLUGINS_DIR/$PLUGIN_NAME/$VERSION"
-mkdir -p "$DEST"
-rm -rf "$DEST"
-cp -R "$SOURCE_DIR/packages/mimocode/." "$DEST/"
+mkdir -p "$MIMOCODE_PLUGINS_DIR/$PLUGIN_NAME"
+
+if [[ "${FOUNDRY_INSTALL_COPY:-0}" == "1" ]]; then
+  rm -rf "$DEST"
+  cp -R "$SOURCE_DIR/packages/mimocode/." "$DEST/"
+  echo "  mode: copy (FOUNDRY_INSTALL_COPY=1)"
+else
+  ln -sfn "$SOURCE_DIR/packages/mimocode" "$DEST"
+  echo "  mode: symlink (default — pull in the clone to update)"
+fi
 
 echo ""
 echo "✓ Installed foundry-pipeline v$VERSION to $DEST"

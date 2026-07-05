@@ -1,0 +1,14 @@
+name: foundry-install-workspace-help
+description: foundry-install-workspace.sh --help lists every supported harness
+test_cmd: |
+  help=$(bash packages/core/scripts/foundry-install-workspace.sh --help 2>&1)
+  failed=0
+  for h in claude-code zcode hermes opencode antigravity mimocode skills-sh minimax cursor codex windsurf cline gemini; do
+    echo "$help" | grep -q "$h" || { echo "  missing harness: $h" >&2; failed=1; }
+  done
+  # Env-var escape hatch documented
+  echo "$help" | grep -q 'FOUNDRY_INSTALL_COPY' || failed=1
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

@@ -3,7 +3,7 @@ name: handoff
 description: Compact the current session's state into a handoff document so a fresh session (or another person) can resume losslessly. Use before ending a long session, switching machines, or handing work over.
 disable-model-invocation: true
 ---
-foundry_version: 2.0.0
+foundry_version: 2.0.1
 
 # /handoff — lossless resumption
 

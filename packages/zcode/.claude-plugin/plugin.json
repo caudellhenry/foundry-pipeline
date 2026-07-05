@@ -1,6 +1,6 @@
 {
   "name": "foundry-pipeline",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Canonical foundry AI-engineering pipeline — packaged for Zcode. Symlinks to ~/.zcode/cli/plugins/cache/foundry-pipeline/<version>/ on install.",
   "author": {
     "name": "Henry Caudell"

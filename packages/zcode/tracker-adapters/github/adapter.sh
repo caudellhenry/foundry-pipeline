@@ -129,6 +129,44 @@ _tracker_github_status_label() {
   esac
 }
 
+# Map foundry labels + title/body keywords → github-discipline standard labels
+# (bug / enhancement / chore). Foundry:* labels are always preserved so the
+# loop's status semantics survive the round-trip. Emits one label per line.
+#
+# Args: title, body, foundry_labels_csv
+_tracker_github_infer_gh_labels() {
+  local title="$1"
+  local body="$2"
+  local foundry_labels="$3"
+
+  # Normalize inputs for case-insensitive keyword matching.
+  local lower
+  lower=$(printf '%s %s' "$title" "$body" | tr '[:upper:]' '[:lower:]')
+
+  # foundry:enabler → chore
+  if [[ ",${foundry_labels}," == *",foundry:enabler,"* ]]; then
+    echo "chore"
+    return 0
+  fi
+
+  # foundry:story → bug or enhancement based on keywords
+  if [[ ",${foundry_labels}," == *",foundry:story,"* ]]; then
+    # Bug heuristic — keep this list small + conservative. We only infer
+    # `bug` when the title or body explicitly suggests a defect, so we don't
+    # mislabel genuine enhancement work as a bug.
+    if [[ "$lower" =~ (fix|broken|crash|error|bug|fail|regression) ]]; then
+      echo "bug"
+    else
+      echo "enhancement"
+    fi
+    return 0
+  fi
+
+  # No foundry label matched → default to enhancement (best guess for an
+  # unlabelled issue; user can re-label manually if needed).
+  echo "enhancement"
+}
+
 # Create issue
 # Args: title, body, labels (comma-separated)
 tracker_github_create_issue() {
@@ -136,15 +174,27 @@ tracker_github_create_issue() {
   local body="${2:-}"
   local labels="${3:-}"
 
-  # Convert comma-separated labels to JSON array
+  # Convert comma-separated labels to JSON array, then add inferred
+  # github-discipline labels (bug / enhancement / chore). Foundry:* labels
+  # are preserved verbatim.
   local labels_json
   labels_json=$(echo "$labels" | tr ',' '\n' | sed 's/^[[:space:]]*//' | sed '/^$/d' | jq -R . | jq -s .)
+
+  local inferred
+  inferred=$(_tracker_github_infer_gh_labels "$title" "$body" "$labels")
+
+  # Merge: foundry labels + inferred (deduped, preserving order).
+  local merged
+  merged=$(jq -n \
+    --argjson foundry "$labels_json" \
+    --arg inferred "$inferred" \
+    '($foundry + ([$inferred] | map(select(. != "" and (. as $i | $foundry | index($i) | not)))))')
 
   local payload
   payload=$(jq -n \
     --arg title "$title" \
     --arg body "$body" \
-    --argjson labels "$labels_json" \
+    --argjson labels "$merged" \
     '{title: $title, body: $body, labels: $labels}')
 
   local response

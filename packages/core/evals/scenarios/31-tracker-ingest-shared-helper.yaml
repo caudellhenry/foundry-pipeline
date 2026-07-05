@@ -1,0 +1,44 @@
+name: tracker-ingest-shared-helper
+description: shared tracker-pull-common.sh helpers write story frontmatter and update board.md
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+  cd "$TMPDIR"
+  mkdir -p .foundry/plan/stories .foundry/qa/evidence .foundry/tdd .foundry/logs
+  cat > .foundry/plan/board.md <<'EOF'
+  ---
+  phase: plan
+  ---
+  # Board
+
+  ## Ready
+  ## In progress
+  ## Done
+  EOF
+  # shellcheck disable=SC1091
+  source "$PROJECT_ROOT/packages/core/scripts/lib/tracker-pull-common.sh"
+  export TRACKER_PULL_SID="STORY-42"
+  export TRACKER_PULL_TITLE="Add password reset endpoint"
+  export TRACKER_PULL_BODY="Users need to reset passwords."
+  export TRACKER_PULL_IMPORTED_FROM="github"
+  export TRACKER_PULL_TRACKER_ID_FIELD="github_issue_id"
+  export TRACKER_PULL_TRACKER_ID_VALUE="42"
+  export TRACKER_PULL_TRACKER_URL="https://github.com/me/repo/issues/42"
+  export TRACKER_PULL_TRACKER_HUMAN_ID="#42"
+  export TRACKER_PULL_PRIORITY="P2"
+  export TRACKER_PULL_STATE="open"
+  tracker_pull_write_story_file
+  tracker_pull_add_to_board
+  test -f .foundry/plan/stories/STORY-42.md
+  grep -q "github_issue_id: 42" .foundry/plan/stories/STORY-42.md
+  grep -q "github_url: https://github.com/me/repo/issues/42" .foundry/plan/stories/STORY-42.md
+  grep -q "STORY-42 — Add password reset endpoint" .foundry/plan/board.md
+  # Idempotency: re-running should not duplicate the board entry
+  tracker_pull_add_to_board
+  count=$(grep -c "STORY-42 — Add password reset endpoint" .foundry/plan/board.md || true)
+  test "$count" = "1"
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

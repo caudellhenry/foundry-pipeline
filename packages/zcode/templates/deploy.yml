@@ -1,0 +1,48 @@
+name: Deploy
+
+# Trigger only on PR merge to main. workflow_dispatch is the escape hatch for
+# manual deploys (or re-running a failed deploy). Direct pushes to main do NOT
+# trigger deploys — they must come through a PR.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Closed-but-not-merged PRs do not deploy.
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FOUNDRY_DEPLOY_TARGET: ${{ vars.FOUNDRY_DEPLOY_TARGET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # === FOUNDRY_DEPLOY_STEPS_START ===
+      # This block is replaced by `foundry-deploy.sh init` based on the
+      # project's detected deploy target (firebase | vercel | netlify | custom).
+      # Re-running `foundry-deploy.sh init` updates the block in place; existing
+      # steps outside the markers are preserved.
+      - name: Deploy (no target configured)
+        run: |
+          echo "ERROR: No deploy target configured. Run 'foundry-deploy.sh init' to set one."
+          exit 1
+      # === FOUNDRY_DEPLOY_STEPS_END ===
+
+      - name: Report deploy URL
+        if: env.FOUNDRY_DEPLOY_TARGET != '' && success()
+        run: |
+          DEPLOY_URL="${DEPLOY_URL:-}"
+          if [[ -n "$DEPLOY_URL" ]]; then
+            echo "::notice title=Deploy succeeded::URL: $DEPLOY_URL"
+          fi

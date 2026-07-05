@@ -144,6 +144,215 @@ read_platform() {
   printf '%s' "${p:-none}"
 }
 
+# PR-green writeback: for any ticket whose PR is green (## Status: green in
+# pr-state/<TICKET>.md) but hasn't yet been written back to the tracker,
+# invoke foundry-tracker-writeback.sh once. Idempotent via a file marker at
+# .foundry/tracker-writeback/<TICKET>.done so re-runs are no-ops.
+#
+# Only runs when tracker.backend != local (local has no remote issue to update).
+tracker_writeback_green() {
+  local plugin_root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+  local interface="$plugin_root/tracker-adapters/interface.sh"
+  if [[ ! -f "$interface" ]]; then return 0; fi
+  # shellcheck disable=SC1091
+  source "$interface"
+  tracker_autodetect
+  local backend="${TRACKER_ADAPTER:-local}"
+  if [[ "$backend" == "local" || -z "$backend" ]]; then return 0; fi
+
+  # Scan phases.execute.prs.<TICKET> in state.md.
+  local prs
+  prs=$(awk '
+    /^[[:space:]]+prs:[[:space:]]*$/ { f=1; next }
+    f && /^[[:space:]]+[a-z]/ && !/^[[:space:]]+[a-z][a-z]*-[a-z]/ { f=0 }
+    f && /^[[:space:]]+STORY-[0-9]+:/ {
+      match($0, /STORY-[0-9]+/)
+      tid = substr($0, RSTART, RLENGTH)
+      sub(/^[[:space:]]*STORY-[0-9]+:[[:space:]]*/, "")
+      gsub(/[[:space:]]+$/, "")
+      sub(/[[:space:]]+#.*$/, "")
+      url = $0
+      if (url != "") print tid " " url
+    }
+  ' "$STATE_FILE" 2>/dev/null)
+  [[ -z "$prs" ]] && return 0
+
+  local writeback_dir="$FOUNDRY_DIR/tracker-writeback"
+  mkdir -p "$writeback_dir" 2>/dev/null || true
+  local writeback_script="$plugin_root/scripts/foundry-tracker-writeback.sh"
+
+  while IFS=' ' read -r ticket url; do
+    [[ -z "$ticket" || -z "$url" ]] && continue
+    local pr_file="$FOUNDRY_DIR/pr-state/$ticket.md"
+    local marker="$writeback_dir/$ticket.done"
+    # Skip if no pr-state, not green, or already written back.
+    if [[ ! -f "$pr_file" ]] || ! grep -qE '^## Status:[[:space:]]*green' "$pr_file"; then
+      continue
+    fi
+    if [[ -f "$marker" ]]; then
+      continue
+    fi
+    # Extract the commit hash from the pr-state file or evidence file.
+    local commit=""
+    commit=$(awk '/^commit:/{print $2; exit}' "$pr_file" 2>/dev/null || true)
+    if [[ -z "$commit" && -f "$FOUNDRY_DIR/qa/evidence/$ticket.md" ]]; then
+      commit=$(awk '/^commit:/{print $2; exit}' "$FOUNDRY_DIR/qa/evidence/$ticket.md" 2>/dev/null || true)
+    fi
+    # Fire the writeback (non-blocking: errors don't break the loop).
+    if bash "$writeback_script" "$ticket" \
+        --status=done \
+        --summary="Implemented via PR $url. Foundry dev+QA loop marked this ticket done." \
+        --pr="$url" \
+        --commit="$commit" \
+        >/dev/null 2>&1; then
+      touch "$marker"
+      echo "Tracker writeback: $ticket → done (PR $url)"
+    else
+      echo "  ⚠ writeback failed for $ticket — non-blocking" >&2
+    fi
+  done <<< "$prs"
+}
+
+# Tracker ingest: pull new ready issues from the configured tracker backend
+# into the local kanban. Idempotent — re-runs are no-ops for already-imported
+# issues. Skipped entirely when tracker.backend is `local` or unset.
+#
+# Reads .foundry/state.md `tracker.backend`. For each ready issue returned by
+# the adapter's tracker_list_issues, writes a story file via the shared
+# tracker-pull-common.sh helpers (so the frontmatter shape matches
+# /foundry-tracker-pull-issue.sh's output exactly) and appends to
+# plan/board.md `## Ready`. Errors are surfaced but non-blocking — the loop
+# continues with whatever's already local.
+#
+# Emits a one-line summary on stdout: "Tracker ingest: N new, M already, K errors".
+tracker_ingest_new() {
+  # Find tracker adapter interface — bail silently if the plugin isn't here.
+  local plugin_root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+  local interface="$plugin_root/tracker-adapters/interface.sh"
+  local shared="$plugin_root/scripts/lib/tracker-pull-common.sh"
+  if [[ ! -f "$interface" || ! -f "$shared" ]]; then
+    return 0
+  fi
+
+  # Source interface (provides tracker_autodetect) and shared helpers.
+  # shellcheck disable=SC1091
+  source "$interface"
+  # shellcheck disable=SC1091
+  source "$shared"
+
+  tracker_autodetect
+  local backend="${TRACKER_ADAPTER:-local}"
+  if [[ "$backend" == "local" || -z "$backend" ]]; then
+    return 0
+  fi
+
+  # Source the backend-specific adapter. Missing adapters are silent (no-op).
+  if [[ ! -f "$plugin_root/tracker-adapters/$backend/adapter.sh" ]]; then
+    return 0
+  fi
+  # shellcheck disable=SC1091
+  source "$plugin_root/tracker-adapters/$backend/adapter.sh"
+
+  # Initialise the adapter (read config from state.md, validate auth). If
+  # tracker_init fails (connector failure), skip silently — the loop should
+  # not break just because the tracker isn't reachable.
+  if ! tracker_init >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local created=0 skipped=0 errors=0
+  local issue_ids
+  if ! issue_ids=$(tracker_list_issues status=ready 2>/dev/null); then
+    return 0
+  fi
+
+  # tracker_list_issues emits a JSON array of {id, title, status, url}
+  # Pull out the ids and process one at a time.
+  local ids
+  ids=$(echo "$issue_ids" | jq -r '.[].id' 2>/dev/null)
+  [[ -z "$ids" ]] && return 0
+
+  # Set env vars for the shared helpers (per-iteration).
+  export TRACKER_PULL_FOUNDRY_DIR="$FOUNDRY_DIR"
+  local stories_dir="$FOUNDRY_DIR/plan/stories"
+
+  for raw_id in $ids; do
+    # Normalize to a canonical numeric/string id.
+    local id="$raw_id"
+
+    # Derive the local STORY sid from the tracker id.
+    local sid
+    case "$backend" in
+      linear) sid="$id" ;;                              # HAC-42 already 1:1
+      github) sid="STORY-${id}" ;;                      # 42 → STORY-42
+    esac
+
+    # Already imported? Skip silently (idempotent re-runs).
+    if [[ -f "$stories_dir/${sid}.md" ]]; then
+      skipped=$((skipped + 1))
+      continue
+    fi
+
+    # Fetch full issue. If the fetch fails, count it as an error and continue.
+    local issue_json
+    if ! issue_json=$(tracker_get_issue "$id" 2>/dev/null); then
+      errors=$((errors + 1))
+      continue
+    fi
+
+    # Set the env vars the shared helper expects, then call it.
+    local title body state url priority
+    case "$backend" in
+      linear)
+        title=$(echo "$issue_json"   | jq -r '.title // empty')
+        body=$(echo "$issue_json"    | jq -r '.description // ""')
+        state=$(echo "$issue_json"   | jq -r '.state.name // "open"')
+        url=$(echo "$issue_json"     | jq -r '.url // empty')
+        priority="P$(echo "$issue_json" | jq -r '.priority // 3')"
+        export TRACKER_PULL_SID="$sid"
+        export TRACKER_PULL_TITLE="$title"
+        export TRACKER_PULL_BODY="$body"
+        export TRACKER_PULL_IMPORTED_FROM="linear"
+        export TRACKER_PULL_TRACKER_ID_FIELD="linear_issue_id"
+        export TRACKER_PULL_TRACKER_ID_VALUE="$id"
+        export TRACKER_PULL_TRACKER_ID2_FIELD="linear_issue_uuid"
+        export TRACKER_PULL_TRACKER_ID2_VALUE="$id"  # Linear returns identifier; UUID resolved by adapter
+        export TRACKER_PULL_TRACKER_URL="$url"
+        export TRACKER_PULL_TRACKER_HUMAN_ID="$id"
+        export TRACKER_PULL_PRIORITY="$priority"
+        export TRACKER_PULL_STATE="$state"
+        ;;
+      github)
+        title=$(echo "$issue_json" | jq -r '.title // empty')
+        body=$(echo "$issue_json"  | jq -r '.body // ""')
+        state=$(echo "$issue_json" | jq -r '.state // "open"')
+        url=$(echo "$issue_json"   | jq -r '.html_url // empty')
+        priority="P2"  # GitHub has no native priority; default to P2
+        export TRACKER_PULL_SID="$sid"
+        export TRACKER_PULL_TITLE="$title"
+        export TRACKER_PULL_BODY="$body"
+        export TRACKER_PULL_IMPORTED_FROM="github"
+        export TRACKER_PULL_TRACKER_ID_FIELD="github_issue_id"
+        export TRACKER_PULL_TRACKER_ID_VALUE="$id"
+        export TRACKER_PULL_TRACKER_URL="$url"
+        export TRACKER_PULL_TRACKER_HUMAN_ID="#${id}"
+        export TRACKER_PULL_PRIORITY="$priority"
+        export TRACKER_PULL_STATE="$state"
+        ;;
+    esac
+
+    if tracker_pull_write_story_file && tracker_pull_add_to_board; then
+      created=$((created + 1))
+    else
+      errors=$((errors + 1))
+    fi
+  done
+
+  if [[ "$created" -gt 0 || "$skipped" -gt 0 || "$errors" -gt 0 ]]; then
+    echo "Tracker ingest: ${created} new, ${skipped} already, ${errors} errors (backend=$backend)"
+  fi
+}
+
 case "$phase" in
   execute)
     # Only loop if we're actually in execute phase
@@ -210,16 +419,31 @@ EXECUTE: PR sub-loop active for $PR_TICKET iteration=$((PR_ITER+1))/10
 Focus prompt:
   1. Run: gh pr checks $PR_URL
   2. If any check is FAILING: read logs (gh run view --log-failed), fix locally, commit, push.
-  3. If all checks pass: write .foundry/pr-state/$PR_TICKET.md with '## Status: green' + commit hash + check rollup.
+  3. If all checks pass AND this is the final iteration (no remaining failures):
+     a. Write .foundry/pr-state/$PR_TICKET.md with '## Status: green' + commit hash + check rollup.
+     b. Run: bash packages/zcode/scripts/foundry-post-merge.sh $PR_TICKET $PR_URL
+        This closes the GitHub issue (status=foundry:done + comment), deletes the
+        feature branch (local + remote), and is idempotent via a .done marker.
+     c. Update .foundry/plan/board.md: move $PR_TICKET from In progress to Done.
   4. If stuck, write '## Blockers' section and route a NEW-### ticket back to the board.
 
 Anti-gaming rules:
   - Do NOT modify the check command or exit criteria to force success.
   - Do NOT skip, disable, or bypass checks.
   - Do NOT loop forever (max 10 iterations per PR; if reached, stop and report).
+  - Do NOT call foundry-post-merge.sh until checks are actually green (re-running
+    post-merge on an unmerged PR will refuse and exit 1).
 EOF
       exit 0
     fi
+    # PR-green writeback: for any PR that just went green, write status
+    # back to the tracker (idempotent via file marker). Non-blocking.
+    tracker_writeback_green || true
+    # Tracker ingest: pull new ready issues from the configured tracker
+    # (GitHub/Linear) into the local kanban before picking the next ticket.
+    # Idempotent — only newly-arrived issues get imported. Errors are logged
+    # but don't break the loop.
+    tracker_ingest_new || true
     NEXT="$(pick_next_ticket)"
     if [[ -z "$NEXT" ]]; then
       echo "EXECUTE: board empty (ready=0). Phase 7 complete; advance to QA."

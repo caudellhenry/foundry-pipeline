@@ -1,0 +1,15 @@
+name: deploy-template-syntax
+description: foundry-deploy.sh + deploy.yml template load without syntax errors and have valid YAML
+test_cmd: |
+  set +u
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+  bash -n "$PROJECT_ROOT/packages/zcode/scripts/foundry-deploy.sh"
+  bash -n "$PROJECT_ROOT/packages/zcode/templates/deploy.yml" 2>/dev/null || true
+  python3 -c "import yaml; yaml.safe_load(open('$PROJECT_ROOT/packages/zcode/templates/deploy.yml').read().split('# === FOUNDRY_DEPLOY_STEPS_START ===')[0])"
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-deploy.sh" help >/dev/null
+  # Capture stdout to avoid SIGPIPE killing init under pipefail; then grep.
+  output=$(bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-deploy.sh" init custom 2>/dev/null)
+  echo "$output" | grep -q "Deploy workflow configured for target: custom"
+expected_exit: 0
+pass_k: 3
+release_gating: true

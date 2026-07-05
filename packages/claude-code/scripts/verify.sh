@@ -129,6 +129,39 @@ verify_execute() {
     reason=$(echo "$runner_json" | grep -oE '"reason":"[^"]*"' | head -1 | sed 's/.*"reason":"\([^"]*\)".*/\1/')
     fail "tests did not pass: $reason"
   fi
+
+  # 3. v2.1.0 — Deploy check (only when platform: github and a PR URL is known)
+  # Skip on local-only platforms (no deploy target).
+  local platform
+  platform="$(grep -E '^[[:space:]]+platform:' "$STATE_FILE" 2>/dev/null | head -1 | sed -E 's/^[[:space:]]+platform:[[:space:]]*//' | sed -E 's/[[:space:]]*#.*$//' | tr -d '[:space:]')"
+  platform="${platform:-none}"
+  if [[ "$platform" == "github" ]]; then
+    # Read the PR URL from the story frontmatter (set by the writer in step 11
+    # when it created the PR).
+    local story_file="$FOUNDRY_DIR/plan/stories/${ticket}.md"
+    local pr_url=""
+    if [[ -f "$story_file" ]]; then
+      pr_url="$(awk -F': ' '/^pr_url:/{gsub(/[ "]/, "", $2); print $2; exit}' "$story_file")"
+    fi
+    if [[ -n "$pr_url" ]]; then
+      # Invoke foundry-deploy.sh verify; treat exit codes:
+      #   0 = deploy succeeded (PASS)
+      #   1 = deploy failed (FAIL — propagate)
+      #   2 = no deploy target / SKIP — not an error, just log
+      local deploy_rc=0
+      DEV_PIPELINE_PROJECT_ROOT="$PROJECT_ROOT" bash "$PLUGIN_ROOT/scripts/foundry-deploy.sh" verify "$pr_url" >/dev/null 2>&1 || deploy_rc=$?
+      case "$deploy_rc" in
+        0) ;;  # success — continue
+        2)
+          printf '  (verify_execute: deploy SKIP — no deploy target configured)\n' >&2
+          ;;
+        *)
+          fail "deploy failed for $pr_url (rc=$deploy_rc)"
+          ;;
+      esac
+    fi
+  fi
+
   ok
 }
 

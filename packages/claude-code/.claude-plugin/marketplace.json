@@ -7,8 +7,8 @@
     {
       "name": "foundry-pipeline",
       "source": "./",
-      "description": "Canonical foundry AI-engineering pipeline (v2.0.0). Idea → Research → Prototype → PRD → Board → Execution → QA. Tracker-flexible (local / GitHub / Linear). Patch-aware. Installable across Claude Code, Zcode, Hermes, OpenCode, Antigravity, MimoCode."
+      "description": "Canonical foundry AI-engineering pipeline (v2.1.0). Idea → Research → Prototype → PRD → Board → Execution → QA. Tracker-flexible (local / GitHub / Linear). GitHub Issues integration: board pushes stories as issues with Closes #N wiring; dev-QA loop auto-creates PRs with proper bodies; foundry owns the deploy workflow (firebase / vercel / netlify / custom). Patch-aware. Installable across Claude Code, Zcode, Hermes, OpenCode, Antigravity, MimoCode."
     }
   ],
-  "version": "2.0.2"
+  "version": "2.1.0"
 }

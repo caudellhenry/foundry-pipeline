@@ -1,0 +1,54 @@
+name: github-pull-issue-dry-run
+description: foundry-tracker-pull-issue.sh in dry-run mode parses GitHub identifier + plans story file without API calls
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+  cd "$TMPDIR"
+  mkdir -p .foundry/plan/stories .foundry/qa/evidence .foundry/tdd .foundry/logs
+  cat > .foundry/state.md <<'EOF'
+  ---
+  phase: plan
+  current_phase: plan
+  ---
+  tracker:
+    backend: github
+    repo: caudellhenry/rally
+  EOF
+  cat > .foundry/plan/board.md <<'EOF'
+  ---
+  phase: plan
+  ---
+  # Board
+
+  ## Ready
+  ## In progress
+  ## Done
+  EOF
+  # Stub the GitHub CLI so the script doesn't reach a real network.
+  # The stub records the args and emits a minimal issue JSON.
+  mkdir -p bin
+  cat > bin/gh <<'GHSTUB'
+  #!/usr/bin/env bash
+  if [[ "$1" == "auth" ]]; then exit 0; fi
+  if [[ "$*" == *"repos/caudellhenry/rally/issues/42"* ]]; then
+    cat <<'JSON'
+  {"number":42,"title":"Add password reset endpoint","body":"Users need to reset passwords.","state":"open","html_url":"https://github.com/caudellhenry/rally/issues/42","labels":[{"name":"foundry:ready"},{"name":"priority:high"}]}
+  JSON
+    exit 0
+  fi
+  echo '{}'
+  exit 0
+  GHSTUB
+  chmod +x bin/gh
+  export PATH="$TMPDIR/bin:$PATH"
+  # Dry-run: should print [DRY-RUN] markers, not write files.
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-tracker-pull-issue.sh" 42 --dry-run
+  # Dry-run must NOT have created the story file
+  test ! -f .foundry/plan/stories/STORY-42.md
+  # But it must have echoed the GitHub identifier parsing
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-tracker-pull-issue.sh" '#42' --dry-run 2>&1 | grep -q "identifier:  #42"
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

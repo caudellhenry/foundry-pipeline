@@ -2,7 +2,7 @@
 name: foundry-agent-eval
 description: Cross-cutting discipline skill. Defines the eval harness for the foundry — runs the agent's behaviour against fixed scenarios (analogous to SWE-bench Verified) so prompt drift is caught in CI, not in production. Treats prompts as first-class versioned, evaled artefacts (Goedecke: "prompts are technical debt too"). Fixtures live in .foundry/eval/{scenarios,results}/. Run on Stop (when a ticket lands), and via the /foundry-eval slash command.
 ---
-foundry_version: 2.0.2
+foundry_version: 2.0.3
 
 # Cross-cutting — Agent Eval
 

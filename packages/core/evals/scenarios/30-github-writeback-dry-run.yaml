@@ -1,0 +1,54 @@
+name: github-writeback-dry-run
+description: foundry-tracker-writeback.sh in dry-run mode for GitHub backend reads github_issue_id from story frontmatter
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+  cd "$TMPDIR"
+  mkdir -p .foundry/plan/stories
+  cat > .foundry/state.md <<'EOF'
+  ---
+  phase: execute
+  ---
+  tracker:
+    backend: github
+    repo: caudellhenry/rally
+  EOF
+  cat > .foundry/plan/stories/STORY-42.md <<'EOF'
+  ---
+  sid: STORY-42
+  status: in_progress
+  imported_from: github
+  github_issue_id: "42"
+  github_url: https://github.com/caudellhenry/rally/issues/42
+  ---
+  # STORY-42
+
+  Test story.
+  EOF
+  # Stub gh so tracker_init doesn't fail
+  mkdir -p bin
+  cat > bin/gh <<'GHSTUB'
+  #!/usr/bin/env bash
+  if [[ "$1" == "auth" ]]; then exit 0; fi
+  echo '{}'
+  exit 0
+  GHSTUB
+  chmod +x bin/gh
+  export PATH="$TMPDIR/bin:$PATH"
+  # Dry-run with a GitHub-backend story
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-tracker-writeback.sh" STORY-42 \
+    --status=done \
+    --summary="Implemented via PR #43" \
+    --pr=https://github.com/caudellhenry/rally/pull/43 \
+    --commit=abc1234 \
+    --dry-run
+  # Confirm the dry-run echoed the GH identifier and a foundry:done label hint
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-tracker-writeback.sh" STORY-42 \
+    --status=done --summary="test" --dry-run 2>&1 | grep -q "42 (https://github.com/caudellhenry/rally/issues/42)"
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-tracker-writeback.sh" STORY-42 \
+    --status=done --summary="test" --dry-run 2>&1 | grep -q "foundry:done"
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

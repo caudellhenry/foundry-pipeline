@@ -30,12 +30,12 @@ PLUGIN_NAME="foundry-pipeline"
 # Both home and workspace paths are prefixed with the dotted harness dir
 # (e.g. .claude/, .zcode/) — that's where each harness looks.
 HARVESTS=(
-  "claude-code|claude-code|.claude/plugins/cache/{ver}|.claude/plugins/cache/{ver}"
-  "zcode|zcode|.zcode/cli/plugins/cache/{ver}|.zcode/cli/plugins/cache/{ver}"
+  "claude-code|claude-code|.claude/plugins/cache/foundry-pipeline/{ver}|.claude/plugins/cache/foundry-pipeline/{ver}"
+  "zcode|zcode|.zcode/cli/plugins/cache/foundry-pipeline/{ver}|.zcode/cli/plugins/cache/foundry-pipeline/{ver}"
   "hermes|hermes|.hermes/skills/foundry-*|.hermes/skills/foundry-*"
   "opencode|opencode|.opencode/skills/foundry-*|.opencode/skills/foundry-*"
-  "antigravity|antigravity|.antigravity/plugins/{ver}|.antigravity/plugins/{ver}"
-  "mimocode|mimocode|.mimocode/plugins/{ver}|.mimocode/plugins/{ver}"
+  "antigravity|antigravity|.antigravity/plugins/foundry-pipeline/{ver}|.antigravity/plugins/foundry-pipeline/{ver}"
+  "mimocode|mimocode|.mimocode/plugins/foundry-pipeline/{ver}|.mimocode/plugins/foundry-pipeline/{ver}"
   "skills-sh|skills-sh|.skills-sh/skills/foundry-*|.skills-sh/skills/foundry-*"
   "minimax|minimax|.minimax/skills/foundry-*|.minimax/skills/foundry-*"
   "cursor|cursor|.cursor/skills/foundry-*|.cursor/skills/foundry-*"

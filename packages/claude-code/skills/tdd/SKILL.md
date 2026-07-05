@@ -2,7 +2,7 @@
 name: foundry-tdd
 description: Phase 5 of the foundry — the TDD test specs phase (non-conditional). Reads the PRD and writes one .foundry/tdd/<STORY-ID>.md per user story, defining the tests that must pass for that story to meet its Definition of Done. Specs are written BEFORE the kanban plan so that plan tickets can reference concrete test expectations and the execution loop has a frozen contract. Use when /foundry-tdd is invoked or when the pipeline auto-advances from Phase 4.
 ---
-foundry_version: 2.0.1
+foundry_version: 2.0.2
 
 # Phase 5 — TDD Test Specs
 

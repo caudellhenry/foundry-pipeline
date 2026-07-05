@@ -1,0 +1,40 @@
+name: foundry-install-workspace-paths
+description: foundry-install-workspace.sh HARVESTS use <harness>/.../foundry-pipeline/{ver} for plugin-style harnesses (regression for v2.0.1 path bug)
+test_cmd: |
+  failed=0
+  src=packages/core/scripts/foundry-install-workspace.sh
+  bash -n "$src" || failed=1
+  # Plugin-style harnesses must include the foundry-pipeline/ segment in BOTH
+  # the HOME and WORKSPACE templates.
+  for h in claude-code zcode antigravity mimocode; do
+    line=$(grep -E "^[[:space:]]*\"$h\\|" "$src" || true)
+    if [[ -z "$line" ]]; then
+      # harness missing from registry entirely — fail
+      echo "  $h missing from HARVESTS" >&2; failed=1
+      continue
+    fi
+    # Extract home_tpl and ws_tpl (3rd and 4th pipe-delimited fields)
+    home_tpl=$(echo "$line" | awk -F'|' '{print $3}' | tr -d '"')
+    ws_tpl=$(echo "$line" | awk -F'|' '{print $4}' | tr -d '"')
+    case "$home_tpl" in
+      *foundry-pipeline/{ver}|*foundry-pipeline/*)
+        # Per-skill harnesses use wildcards; only plugin-style should have /foundry-pipeline/{ver}
+        if [[ "$home_tpl" != *"/foundry-pipeline/{ver}" && "$home_tpl" != *"/foundry-pipeline/"*"/{ver}" ]]; then
+          echo "  $h HOME template missing /foundry-pipeline/{ver}: $home_tpl" >&2
+          failed=1
+        fi
+        ;;
+      *)
+        echo "  $h HOME template wrong (expected to contain foundry-pipeline/{ver}): $home_tpl" >&2
+        failed=1
+        ;;
+    esac
+    if [[ "$ws_tpl" != "$home_tpl" ]]; then
+      echo "  $h HOME/WORK templates differ (must match): home=$home_tpl ws=$ws_tpl" >&2
+      failed=1
+    fi
+  done
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

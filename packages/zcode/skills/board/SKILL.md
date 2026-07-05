@@ -2,7 +2,7 @@
 name: foundry-plan
 description: Phase 5 of the foundry — the Plan / Kanban phase (non-conditional). Reads the PRD and decomposes it into Features (parent) and User Stories (children), then lays out a kanban board with blocking relationships. Local-first: all tickets, dependencies, and status live in .foundry/plan/{features,board,stories/}.md. Linear / GitHub Issues integration is a future improvement. Use when /foundry-plan is invoked or when the pipeline auto-advances from Phase 4.
 ---
-foundry_version: 2.0.1
+foundry_version: 2.0.2
 
 # Phase 5 — Plan / Kanban
 

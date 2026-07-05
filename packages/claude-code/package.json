@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/claude-code",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "description": "Claude Code marketplace plugin wrapper for the foundry pipeline. Adds commands/ and hooks/ to the portable core.",
   "license": "MIT",

@@ -2,7 +2,7 @@
 name: foundry-research
 description: Phase 2 of the foundry — the Research phase (conditional). Caches hard-to-explore external knowledge (third-party APIs, niche libraries, framework internals) into .foundry/research/research.md with an explicit expiry date. Uses WebFetch / WebSearch to gather information; caches only what the agent cannot retrieve reliably from parametric knowledge. Skip rule: if the topic is in the agent's training data and stable, skip this phase. Use when /foundry-research is invoked or when the pipeline auto-advances from Phase 1.
 ---
-foundry_version: 2.0.1
+foundry_version: 2.0.2
 
 # Phase 2 — Research (conditional)
 

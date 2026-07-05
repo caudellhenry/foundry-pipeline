@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/zcode",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "private": true,
   "description": "Zcode plugin wrapper for the foundry pipeline. Mirrors the Claude Code package surface (commands + hooks) but installs to ~/.zcode/cli/plugins/cache/.",
   "license": "MIT",

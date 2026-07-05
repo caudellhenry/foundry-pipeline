@@ -2,7 +2,7 @@
 name: foundry-prototype
 description: Phase 3 of the foundry — the Prototype phase (conditional). Imposes taste on the outcome before locking the PRD — iterate a throwaway tracer bullet (UI, architecture, or external-service test), commit the winner into the codebase, and capture notes. Uses the TDD red/green discipline (mattpocock/skills/tdd pattern). Skip rule: if the work is purely mechanical with no taste decision, skip. Use when /foundry-prototype is invoked or when the pipeline auto-advances from Phase 2.
 ---
-foundry_version: 2.0.1
+foundry_version: 2.0.2
 
 # Phase 3 — Prototype (conditional)
 

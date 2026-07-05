@@ -2,7 +2,7 @@
 name: foundry-orchestrator
 description: Master orchestrator for the Foundry AI-engineering SDLC pipeline (Idea → Research → Prototype → PRD → Plan/Kanban → Execution → QA). Triggered by /foundry or $foundry. v1.0.0 dispatches the 4-spawn Anthropic A2 ceremony (explorer → planner → implementer → committer) per ticket + foundry-tester for adversarial QA. Reads .foundry/state.md, runs the convergent Dev/QA loop via stop-hook, persists all artefacts to local markdown, and surfaces phase status. Use when the user says /foundry, $foundry, "start the pipeline", "ship this feature", or invokes any foundry-* slash command.
 ---
-foundry_version: 2.0.1
+foundry_version: 2.0.2
 
 # /foundry — Foundry AI-Engineering Orchestrator
 

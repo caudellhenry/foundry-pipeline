@@ -19,6 +19,15 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCENARIOS_DIR="$REPO_ROOT/evals/scenarios"
 RESULTS_DIR="$REPO_ROOT/evals/results"
 
+# Discover all packages/*/evals/scenarios/ directories (in addition to monorepo-level)
+PACKAGE_SCENARIOS_DIRS=()
+while IFS= read -r -d '' d; do
+  PACKAGE_SCENARIOS_DIRS+=("$d")
+done < <(find "$REPO_ROOT/packages" -type d -path '*/evals/scenarios' -print0 2>/dev/null)
+
+# De-dupe: track seen scenario names
+declare -a SEEN_SCENARIOS=()
+
 mkdir -p "$RESULTS_DIR"
 
 SCENARIO_FILTER=""
@@ -51,11 +60,12 @@ fi
 # List mode
 if [[ "$LIST_ONLY" -eq 1 ]]; then
   echo "Scenarios:"
-  for f in "$SCENARIOS_DIR"/*.yaml; do
+  for f in "$SCENARIOS_DIR"/*.yaml "${PACKAGE_SCENARIOS_DIRS[@]}"/*.yaml; do
     [[ -f "$f" ]] || continue
     name="$(basename "$f" .yaml)"
     desc="$(grep -E '^description:' "$f" | head -1 | sed 's/description: *//' | tr -d '"')"
     exp="$(grep -E '^expected_exit:' "$f" | head -1 | awk '{print $2}')"
+    [[ -z "$exp" ]] && exp="$(grep -E '^expect_exit_code:' "$f" | head -1 | awk '{print $2}')"
     pk="$(grep -E '^pass_k:' "$f" | head -1 | awk '{print $2}')"
     rg="$(grep -E '^release_gating:' "$f" | head -1 | awk '{print $2}')"
     printf '  %-40s exit=%s k=%s release_gating=%s — %s\n' "$name" "$exp" "$pk" "$rg" "$desc"
@@ -66,9 +76,15 @@ fi
 declare -i TOTAL=0 PASS=0 FAIL=0 RELEASE_GATING_FAIL=0
 declare -a SCENARIO_RESULTS=()
 
-for scenario_file in "$SCENARIOS_DIR"/*.yaml; do
+for scenario_file in "$SCENARIOS_DIR"/*.yaml "${PACKAGE_SCENARIOS_DIRS[@]}"/*.yaml; do
   [[ -f "$scenario_file" ]] || continue
   name="$(basename "$scenario_file" .yaml)"
+
+  # De-dupe by full path (so monorepo + core scenarios with the same basename both run)
+  for seen in "${SEEN_SCENARIOS[@]:-}"; do
+    [[ "$seen" == "$scenario_file" ]] && continue 2
+  done
+  SEEN_SCENARIOS+=("$scenario_file")
 
   if [[ -n "$SCENARIO_FILTER" && "$name" != *"$SCENARIO_FILTER"* ]]; then
     continue
@@ -76,8 +92,16 @@ for scenario_file in "$SCENARIOS_DIR"/*.yaml; do
 
   TOTAL+=1
   expected_exit="$(grep -E '^expected_exit:' "$scenario_file" | head -1 | awk '{print $2}')"
+  # Also support legacy `expect_exit_code:` schema (port from Zcode v1.3.0)
+  if [[ -z "$expected_exit" ]]; then
+    expected_exit="$(grep -E '^expect_exit_code:' "$scenario_file" | head -1 | awk '{print $2}')"
+  fi
   expected_exit="${expected_exit:-0}"
   test_cmd="$(awk '/^test_cmd: \|/{flag=1; next} flag && /^[^ ]/{flag=0} flag{print}' "$scenario_file" | sed 's/^  //')"
+  # If test_cmd is still empty, try single-line `test_cmd: 'literal'` or `test_cmd: literal`
+  if [[ -z "$test_cmd" ]]; then
+    test_cmd="$(grep -E "^test_cmd:" "$scenario_file" | head -1 | sed -E "s/^test_cmd:[[:space:]]*['\"]?//; s/['\"]$//")"
+  fi
   pass_k="$(grep -E '^pass_k:' "$scenario_file" | head -1 | awk '{print $2}')"
   pass_k="${pass_k:-1}"
   release_gating="$(grep -E '^release_gating:' "$scenario_file" | head -1 | awk '{print $2}')"

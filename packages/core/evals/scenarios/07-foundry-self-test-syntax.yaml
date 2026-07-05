@@ -1,5 +1,12 @@
-task: All foundry shell scripts pass bash -n
-test_cmd: 'for f in /Users/henrycaudell/Agents\ Workspace/Skills/foundry/scripts/*.sh; do bash -n "$f" || exit 1; done; exit 0'
-expect_exit_code: 0
+name: foundry-self-test-syntax
+description: All foundry monorepo scripts (root + core + hooks) pass bash -n
+test_cmd: |
+  failed=0
+  for f in scripts/*.sh packages/core/scripts/*.sh packages/core/hooks/*.sh; do
+    [[ -f "$f" ]] || continue
+    bash -n "$f" || failed=1
+  done
+  exit $failed
+expected_exit: 0
 pass_k: 1
 release_gating: true

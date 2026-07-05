@@ -1,9 +1,0 @@
-{
-  "scenario": "08-adversarial-nonexistent-path",
-  "verdict": "PASS",
-  "expected_exit": 1,
-  "pass_k": 3,
-  "k_pass": 3,
-  "release_gating": false,
-  "ran_at": "20260705T000458Z"
-}

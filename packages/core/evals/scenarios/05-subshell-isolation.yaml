@@ -1,0 +1,5 @@
+task: Subshell changes don't leak
+test_cmd: '(export FOO=bar); [ -z "$FOO" ]'
+expect_exit_code: 0
+pass_k: 3
+release_gating: true

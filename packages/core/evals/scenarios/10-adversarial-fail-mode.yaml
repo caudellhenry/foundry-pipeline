@@ -1,0 +1,5 @@
+task: Failure surfaces a non-zero exit code
+test_cmd: 'ls /nonexistent/path/that/should/never/exist/abc123'
+expect_exit_code: 1
+pass_k: 3
+release_gating: false

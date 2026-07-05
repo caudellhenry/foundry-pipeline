@@ -1,9 +1,0 @@
-{
-  "scenario": "03-version-sync-passes",
-  "verdict": "PASS",
-  "expected_exit": 0,
-  "pass_k": 1,
-  "k_pass": 1,
-  "release_gating": true,
-  "ran_at": "20260705T000501Z"
-}

@@ -1,0 +1,15 @@
+---
+name: example-add-a-button
+description: Agent must add a "Save" button to a hypothetical settings page.
+expected_artifacts:
+  - .foundry/tdd/<ticket>.md
+  - .foundry/qa/evidence/<ticket>.md
+expected_test_count: 3
+expected_files_touched:
+  - src/components/Settings.tsx
+  - tests/Settings.test.tsx
+forbidden_patterns:
+  - "TODO"
+  - "fixme"
+max_tokens: 50000
+---

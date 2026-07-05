@@ -1,9 +1,0 @@
-{
-  "scenario": "05-build-dry-run-passes",
-  "verdict": "PASS",
-  "expected_exit": 0,
-  "pass_k": 1,
-  "k_pass": 1,
-  "release_gating": true,
-  "ran_at": "20260705T000346Z"
-}

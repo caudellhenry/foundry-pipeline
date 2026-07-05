@@ -1,0 +1,5 @@
+task: Pipe failure propagates
+test_cmd: 'false | true'
+expect_exit_code: 1
+pass_k: 3
+release_gating: true

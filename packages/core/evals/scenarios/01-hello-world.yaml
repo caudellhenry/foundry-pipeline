@@ -1,0 +1,5 @@
+task: Trivial echo exit 0
+test_cmd: 'echo hello'
+expect_exit_code: 0
+pass_k: 3
+release_gating: true

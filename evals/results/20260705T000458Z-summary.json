@@ -1,7 +1,0 @@
-{
-  "total": 8,
-  "pass": 8,
-  "fail": 0,
-  "release_gating_fail": 0,
-  "scenarios": [{"name":"01-hello-world","verdict":"PASS","pass_k":3,"k_pass":3,"release_gating":true},{"name":"02-version-file-exists","verdict":"PASS","pass_k":1,"k_pass":1,"release_gating":true},{"name":"03-version-sync-passes","verdict":"PASS","pass_k":1,"k_pass":1,"release_gating":true},{"name":"04-self-test-passes","verdict":"PASS","pass_k":1,"k_pass":1,"release_gating":true},{"name":"05-build-dry-run-passes","verdict":"PASS","pass_k":1,"k_pass":1,"release_gating":true},{"name":"06-false-exit-nonzero","verdict":"PASS","pass_k":3,"k_pass":3,"release_gating":true},{"name":"07-subshell-isolation","verdict":"PASS","pass_k":3,"k_pass":3,"release_gating":true},{"name":"08-adversarial-nonexistent-path","verdict":"PASS","pass_k":3,"k_pass":3,"release_gating":false}]
-}

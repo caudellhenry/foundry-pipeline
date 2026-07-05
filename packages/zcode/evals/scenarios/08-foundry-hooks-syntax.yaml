@@ -1,0 +1,5 @@
+task: All foundry hook scripts pass bash -n
+test_cmd: 'for f in /Users/henrycaudell/Agents\ Workspace/Skills/foundry/hooks/*.sh; do bash -n "$f" || exit 1; done; exit 0'
+expect_exit_code: 0
+pass_k: 1
+release_gating: true

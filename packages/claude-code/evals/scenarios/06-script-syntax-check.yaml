@@ -1,0 +1,5 @@
+task: Bash syntax check on a known-good script
+test_cmd: 'bash -n /dev/stdin <<< "echo ok"'
+expect_exit_code: 0
+pass_k: 3
+release_gating: false

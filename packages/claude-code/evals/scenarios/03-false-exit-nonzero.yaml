@@ -1,0 +1,5 @@
+task: Bash false exits 1
+test_cmd: 'false'
+expect_exit_code: 1
+pass_k: 3
+release_gating: true

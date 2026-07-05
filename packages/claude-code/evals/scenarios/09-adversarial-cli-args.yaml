@@ -1,0 +1,5 @@
+task: Runner handles unquoted args gracefully
+test_cmd: 'echo $* | wc -w'
+expect_exit_code: 0
+pass_k: 5
+release_gating: false

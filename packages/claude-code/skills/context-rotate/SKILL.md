@@ -2,7 +2,7 @@
 name: foundry-context-rotate
 description: Cross-cutting discipline skill. Watches for the four named context-failure modes (Context Poisoning, Context Distraction, Context Confusion, Context Clash — per Drew Breunig) and triggers context rotation before the model degrades. Fires on PostToolUse or Stop; suggests /clear or /compact when near 80% of the limit, when a poisoned chunk is detected, or when the focus has drifted from the current ticket. Modeled on Boris Cherny's "auto-compact near 155k tokens" habit.
 ---
-foundry_version: 2.0.2
+foundry_version: 2.0.3
 
 # Cross-cutting — Context Rotation
 

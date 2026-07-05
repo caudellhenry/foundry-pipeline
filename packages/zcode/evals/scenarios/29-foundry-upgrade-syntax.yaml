@@ -1,0 +1,27 @@
+name: foundry-upgrade-syntax
+description: foundry-upgrade.sh passes bash -n, --help lists all 5 steps + flags, cleans the right orphan paths
+test_cmd: |
+  failed=0
+  src=packages/core/scripts/foundry-upgrade.sh
+  cmd=packages/zcode/commands/foundry-upgrade.md
+  bash -n "$src" || failed=1
+  # help covers the 5 numbered steps
+  help=$(bash "$src" --help 2>&1)
+  for step in "fetch" "checkout" "orphan" "install-workspace" "verify"; do
+    echo "$help" | grep -qi -- "$step" || { echo "  help missing '$step'" >&2; failed=1; }
+  done
+  # every flag documented in the .md is in --help too
+  for flag in --to --source --workspace --no-fetch --no-reinstall --no-verify --dry-run; do
+    echo "$help" | grep -q -- "$flag" || { echo "  help missing flag $flag" >&2; failed=1; }
+  done
+  # command file references the script (so the AI knows what to invoke)
+  grep -q 'foundry-upgrade.sh' "$cmd" || { echo "  cmd missing script reference" >&2; failed=1; }
+  grep -q 'foundry_version:' "$cmd" || { echo "  cmd missing foundry_version" >&2; failed=1; }
+  # orphan cleanup covers the 4 plugin-style harness home dirs
+  for h in ".claude/plugins/cache" ".zcode/cli/plugins/cache" ".antigravity/plugins" ".mimocode/plugins"; do
+    grep -q "$h" "$src" || { echo "  src missing orphan path for $h" >&2; failed=1; }
+  done
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

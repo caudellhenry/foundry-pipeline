@@ -1,6 +1,6 @@
 {
   "name": "@foundry-pipeline/core",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "private": true,
   "description": "Portable core for the foundry AI-engineering pipeline. Skills, agents, scripts, tracker-adapters, templates, and evals — consumed by every harness package.",
   "license": "MIT",

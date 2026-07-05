@@ -2,7 +2,7 @@
 name: diagnose
 description: Disciplined diagnosis loop for hard bugs and performance regressions — reproduce, minimise, hypothesise, instrument, fix, regression-test. Use when a failure's cause is not obvious within one look.
 ---
-foundry_version: 2.0.2
+foundry_version: 2.0.3
 
 # diagnose — the bug loop
 

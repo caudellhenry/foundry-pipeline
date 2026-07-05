@@ -2,7 +2,7 @@
 name: foundry-qa
 description: Phase 7 of the foundry — the QA phase. Agent produces a QA plan; human walks through it (incl. code review); new tickets flow back to Phase 5 (board). The diagnose skill produces the QA plan; writer/reviewer sub-agent (fresh context) reviews the diff. Cognitive-debt / comprehension-debt checks per Geoffrey Litt. Loops with Phases 5/6 until the product converges. Use when /foundry-qa is invoked or when the pipeline auto-advances from Phase 6.
 ---
-foundry_version: 2.0.2
+foundry_version: 2.0.3
 
 # Phase 7 — QA
 

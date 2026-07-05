@@ -1,0 +1,7 @@
+name: foundry-self-update-syntax
+description: foundry-self-update.sh passes bash -n syntax check
+test_cmd: |
+  bash -n packages/core/scripts/foundry-self-update.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

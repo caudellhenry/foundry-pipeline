@@ -1,0 +1,18 @@
+name: local-tracker-create-lists
+description: local adapter create → list round-trip works end-to-end
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  cd "$TMPDIR"
+  source packages/core/tracker-adapters/interface.sh
+  source packages/core/tracker-adapters/local/adapter.sh
+  tracker_local_init >/dev/null
+  id=$(tracker_local_create_issue "Test Story" "Body text" "story,priority:high")
+  test -n "$id"
+  tracker_local_update_status "$id" "in_progress" >/dev/null
+  issues=$(tracker_local_list_issues)
+  echo "$issues" | jq -e --arg id "$id" '.[] | select(.id == $id)' >/dev/null
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

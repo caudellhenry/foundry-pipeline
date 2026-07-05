@@ -1,0 +1,10 @@
+name: foundry-patch-skip-writes-file
+description: foundry-patch-skip.sh writes ~/.foundry/patch-skip-until marker
+test_cmd: |
+  TMPHOME=$(mktemp -d)
+  HOME="$TMPHOME" bash packages/core/scripts/foundry-patch-skip.sh --days=7
+  test -f "$TMPHOME/.foundry/patch-skip-until"
+  rm -rf "$TMPHOME"
+expected_exit: 0
+pass_k: 1
+release_gating: true

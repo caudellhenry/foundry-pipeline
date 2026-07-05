@@ -1,0 +1,16 @@
+name: tracker-dispatch-local
+description: tracker_dispatch routes to local adapter correctly
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  cd "$TMPDIR"
+  source packages/core/tracker-adapters/interface.sh
+  source packages/core/tracker-adapters/local/adapter.sh
+  TRACKER_ADAPTER=local
+  tracker_init >/dev/null
+  id=$(tracker_create_issue "Dispatched Story" "Body" "story")
+  test -n "$id"
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

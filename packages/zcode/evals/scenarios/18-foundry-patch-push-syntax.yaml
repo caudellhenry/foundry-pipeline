@@ -1,0 +1,7 @@
+name: foundry-patch-push-syntax
+description: foundry-patch-push.sh passes bash -n syntax check
+test_cmd: |
+  bash -n packages/core/scripts/foundry-patch-push.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

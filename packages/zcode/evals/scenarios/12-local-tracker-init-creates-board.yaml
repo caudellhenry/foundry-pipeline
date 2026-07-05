@@ -1,0 +1,14 @@
+name: local-tracker-init-creates-board
+description: local adapter init creates .foundry/board.md and issues/ dir
+test_cmd: |
+  set +u
+  TMPDIR=$(mktemp -d)
+  cd "$TMPDIR"
+  source packages/core/tracker-adapters/interface.sh
+  source packages/core/tracker-adapters/local/adapter.sh
+  tracker_local_init >/dev/null
+  test -d .foundry/issues && test -f .foundry/board.md
+  rm -rf "$TMPDIR"
+expected_exit: 0
+pass_k: 3
+release_gating: true

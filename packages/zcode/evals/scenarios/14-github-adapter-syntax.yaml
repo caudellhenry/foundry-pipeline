@@ -1,0 +1,7 @@
+name: github-adapter-syntax
+description: github adapter loads without syntax errors
+test_cmd: |
+  bash -n packages/core/tracker-adapters/github/adapter.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

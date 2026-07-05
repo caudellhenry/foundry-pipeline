@@ -1,0 +1,7 @@
+name: tracker-adapter-interface-loads
+description: tracker-adapters/interface.sh loads without syntax errors
+test_cmd: |
+  bash -n packages/core/tracker-adapters/interface.sh
+expected_exit: 0
+pass_k: 1
+release_gating: true

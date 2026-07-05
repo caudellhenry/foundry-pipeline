@@ -47,7 +47,7 @@ for pkg_dir in "$REPO_ROOT"/packages/*/; do
 
     claude-code|zcode)
       # Full rsync of core into package (excluding package.json + .claude-plugin)
-      for sub in skills agents tracker-adapters templates evals scripts lib; do
+      for sub in skills agents tracker-adapters templates evals scripts lib hooks; do
         src="$CORE_DIR/$sub"
         dst="$pkg_dir/$sub"
         if [[ -d "$src" ]]; then

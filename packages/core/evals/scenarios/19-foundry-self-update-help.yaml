@@ -1,0 +1,7 @@
+name: foundry-self-update-help
+description: foundry-self-update.sh --help-style flag is recognized (unknown flag exits non-zero)
+test_cmd: |
+  bash packages/core/scripts/foundry-self-update.sh --bogus-flag 2>/dev/null
+expected_exit: 2
+pass_k: 1
+release_gating: true

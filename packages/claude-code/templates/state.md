@@ -1,11 +1,18 @@
 ---
-pipeline: dev
+pipeline: foundry
 version: 1
+foundry_version: 2.0.0
 created: 2026-07-03
 updated: 2026-07-03
 current_phase: idea
 auto_loop: false
 last_session_id: ""
+tracker:
+  backend: local              # local | github | linear (default: local)
+  repo: ""                    # owner/name — required if github
+  team_id: ""                 # UUID — required if linear
+  project_id: ""              # UUID — optional, only if linear
+  mcp_required: false         # if true, fail loudly when MCP absent
 test:
   runner: auto                # auto-detected on /foundry-init from package.json/pyproject.toml/go.mod/Cargo.toml
   cmd: ""                     # full test command (filled by foundry-auto-detect-test.sh or manually)

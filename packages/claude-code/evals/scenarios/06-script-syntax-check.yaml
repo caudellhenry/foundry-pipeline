@@ -1,5 +1,11 @@
-task: Bash syntax check on a known-good script
-test_cmd: 'bash -n /dev/stdin <<< "echo ok"'
-expect_exit_code: 0
-pass_k: 3
-release_gating: false
+name: script-syntax-check
+description: All packages/core/scripts/*.sh pass bash -n
+test_cmd: |
+  failed=0
+  for f in packages/core/scripts/*.sh; do
+    bash -n "$f" || failed=1
+  done
+  exit $failed
+expected_exit: 0
+pass_k: 1
+release_gating: true

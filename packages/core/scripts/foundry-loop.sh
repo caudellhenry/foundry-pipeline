@@ -419,13 +419,20 @@ EXECUTE: PR sub-loop active for $PR_TICKET iteration=$((PR_ITER+1))/10
 Focus prompt:
   1. Run: gh pr checks $PR_URL
   2. If any check is FAILING: read logs (gh run view --log-failed), fix locally, commit, push.
-  3. If all checks pass: write .foundry/pr-state/$PR_TICKET.md with '## Status: green' + commit hash + check rollup.
+  3. If all checks pass AND this is the final iteration (no remaining failures):
+     a. Write .foundry/pr-state/$PR_TICKET.md with '## Status: green' + commit hash + check rollup.
+     b. Run: bash packages/zcode/scripts/foundry-post-merge.sh $PR_TICKET $PR_URL
+        This closes the GitHub issue (status=foundry:done + comment), deletes the
+        feature branch (local + remote), and is idempotent via a .done marker.
+     c. Update .foundry/plan/board.md: move $PR_TICKET from In progress to Done.
   4. If stuck, write '## Blockers' section and route a NEW-### ticket back to the board.
 
 Anti-gaming rules:
   - Do NOT modify the check command or exit criteria to force success.
   - Do NOT skip, disable, or bypass checks.
   - Do NOT loop forever (max 10 iterations per PR; if reached, stop and report).
+  - Do NOT call foundry-post-merge.sh until checks are actually green (re-running
+    post-merge on an unmerged PR will refuse and exit 1).
 EOF
       exit 0
     fi

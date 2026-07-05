@@ -169,10 +169,12 @@ Some tickets have an exit criterion of *"the review is open and all CI checks pa
    - (Future: `azure-devops`, `bitbucket`, etc. — same shape.)
 
 2. **Per-ticket override** — `exit_criterion` in `.foundry/plan/stories/<TICKET>.md` frontmatter. One of:
-   - `local-only` (default): ticket is done when local tests pass + evidence recorded.
-   - `pr-green`: ticket is done when the GitHub PR is open + all checks green (requires `platform: github`).
-   - `mr-green`: ticket is done when the GitLab MR is open + pipeline green (requires `platform: gitlab`).
+   - `local-only` (default for projects with `platform: none`): ticket is done when local tests pass + evidence recorded.
+   - `pr-green` (default for projects with `platform: github`): ticket is done when the GitHub PR is open + all checks green (requires `platform: github`).
+   - `mr-green` (default for projects with `platform: gitlab`): ticket is done when the GitLab MR is open + pipeline green (requires `platform: gitlab`).
    - `commit-only`: ticket is done when committed to the working branch (no external review needed).
+
+**v2.1.0 — Default flip on `tracker.backend: github`**: when `tracker.backend: github` (the project is wired up to push issues to GitHub), the *project-wide* default for new stories is `pr-green` instead of `local-only`. This avoids the silent "agent wrote code locally but never pushed it" failure mode. Tickets still can override via frontmatter.
 
 If the ticket's `exit_criterion` is incompatible with the project's `platform`, the verifier **fails with a clear error message** telling the agent to align the two.
 

@@ -1,0 +1,11 @@
+name: foundry-post-merge-syntax
+description: foundry-post-merge.sh loads without syntax errors and is idempotent
+test_cmd: |
+  set +u
+  PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+  bash -n "$PROJECT_ROOT/packages/zcode/scripts/foundry-post-merge.sh"
+  # Idempotency: invoking --help should not crash and exit 0
+  bash "$PROJECT_ROOT/packages/zcode/scripts/foundry-post-merge.sh" --help >/dev/null
+expected_exit: 0
+pass_k: 3
+release_gating: true

@@ -53,9 +53,14 @@ for pkg_dir in "$REPO_ROOT"/packages/*/; do
         if [[ -d "$src" ]]; then
           run "mkdir -p '$dst'"
           if [[ "$DRY_RUN" == "1" ]]; then
-            printf '  DRY-RUN: rsync -a --delete %q/ %q/\n' "$src" "$dst"
+            printf '  DRY-RUN: rsync -a %q/ %q/\n' "$src" "$dst"
           else
-            rsync -a --delete "$src/" "$dst/"
+            # NOTE: no --delete here. claude-code/zcode packages may carry
+            # harness-specific files (e.g. packages/zcode/commands/foundry-upgrade.md)
+            # that don't exist in core; --delete would silently destroy them
+            # every build. To remove a core file from a harness package, do it
+            # explicitly in the harness directory.
+            rsync -a "$src/" "$dst/"
             echo "  rsync $src → $dst"
           fi
         fi
